@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 
 def make_env(envs_create, game, life_info, framestack, repeat_probs):
     return gym.vector.AsyncVectorEnv([lambda: gym.wrappers.FrameStack(
-        AtariPreprocessingCustom(gym.make("ALE/" + game + "-v5", frameskip=1, repeat_action_probability=repeat_probs), life_information=life_info), framestack,
+        AtariPreprocessingCustom(gym.make(game, frameskip=1, repeat_action_probability=repeat_probs), life_information=life_info), framestack,
         lz4_compress=False) for _ in range(envs_create)], context="spawn")
 
     #, render_mode="human"
@@ -96,7 +96,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     # environment setup
-    parser.add_argument('--game', type=str, default="NameThisGame")
+    parser.add_argument('--game', type=str, default="gym_super_mario_bros:SuperMarioBros-v0")
     parser.add_argument('--envs', type=int, default=64)
     parser.add_argument('--bs', type=int, default=256)
     parser.add_argument('--rr', type=float, default=1)
@@ -313,6 +313,10 @@ def main():
                       flush=True)
                 last_steps = steps
                 last_time = time.time()
+        avg_score = np.mean(scores_temp[-50:])
+        if avg_score>agent.best_performance:
+            agent.best_performance = avg_score
+            agent.save_model("best_")
 
         # Evaluation
         if steps >= next_eval or steps >= n_steps:

@@ -270,6 +270,8 @@ class Agent:
 
         if self.loading_checkpoint:
             self.load_models("insert_model_name")
+            
+        self.best_performance = -float('inf')
 
     def get_grad_steps(self):
         return self.grad_steps
@@ -326,12 +328,31 @@ class Agent:
     def replace_target_network(self):
         self.tgt_net.load_state_dict(self.net.state_dict())
 
-    def save_model(self):
-        self.net.save_checkpoint(self.agent_name + "_" + str(int((self.env_steps // 250000))) + "M")
+    def save_model(self,prefix="cpt"):
+        checkpoint = {
+            "train_step": self.grad_steps,
+            "env_steps": self.env_steps,
+            "best_performance": self.best_performance,
+            "model": self.net.state_dict(),
+            "optimizer": self.optimizer.state_dict(),
+            "curr_lr": self.lr,
+            "epsilon": self.epsilon.eps
+        }
+        filename = prefix+self.agent_name + "_" + str(int((self.env_steps // 250000))) + "M.model"
+        torch.save(checkpoint, filename + ".model.tmp")
+        os.rename(filename + ".model.tmp", filename)
 
     def load_models(self, name):
-        self.net.load_checkpoint(name)
-        self.tgt_net.load_checkpoint(name)
+        checkpoint = torch.load(name)
+        self.grad_steps = checkpoint["train_step"]
+        self.env_steps = checkpoint["env_steps"]
+        self.best_performance = checkpoint["best_performance"]
+        self.lr = checkpoint["curr_lr"]
+        self.epsilon.eps = checkpoint["epsilon"]
+        
+        self.optimizer.load_state_dict(checkpoint["optimizer"])
+        self.net.load_state_dict(checkpoint["model"])
+        self.tgt_net.load_state_dict(checkpoint["model"])
 
     def learn(self):
         if self.replay_ratio < 1:
