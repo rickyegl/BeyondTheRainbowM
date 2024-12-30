@@ -9,7 +9,7 @@ import torch.optim as optim
 import numpy as np
 from PER import PER
 # from torchsummary import summary
-from networks import ImpalaCNNLarge, ImpalaCNNLargeIQN, NatureIQN, ImpalaCNNLargeC51, FactorizedNoisyLinear
+from networks import ImpalaCNNLargeIQN
 import networks
 from copy import deepcopy
 from functools import partial
