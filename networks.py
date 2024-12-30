@@ -147,6 +147,23 @@ class ImpalaCNNResidual(nn.Module):
         x_ = self.conv_1(self.activation(x_))
         return x + x_
 
+class Dueling(nn.Module):
+    """ The dueling branch used in all nets that use dueling-dqn. """
+    def __init__(self, value_branch, advantage_branch):
+        super().__init__()
+        self.flatten = nn.Flatten()
+        self.value_branch = value_branch
+        self.advantage_branch = advantage_branch
+
+    #@torch.autocast('cuda')
+    def forward(self, x, advantages_only=False):
+        x = self.flatten(x)
+        advantages = self.advantage_branch(x)
+        if advantages_only:
+            return advantages
+
+        value = self.value_branch(x)
+        return value + (advantages - torch.mean(advantages, dim=1, keepdim=True))
 
 
 class ImpalaCNNLargeIQN(nn.Module):
