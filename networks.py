@@ -87,6 +87,46 @@ class FactorizedNoisyLinear(nn.Module):
                         self.weight_mu + self.weight_sigma*self.weight_epsilon,
                         self.bias_mu + self.bias_sigma*self.bias_epsilon)
 
+class ImpalaCNNBlock(nn.Module):
+    """
+    Three of these blocks are used in the large IMPALA CNN.
+    """
+    def __init__(self, depth_in, depth_out, norm_func, activation=nn.ReLU, layer_norm=False,
+                 layer_norm_shapes=False):
+        super().__init__()
+        self.layer_norm = layer_norm
+
+        self.conv = nn.Conv2d(in_channels=depth_in, out_channels=depth_out, kernel_size=3, stride=1, padding=1)
+        self.max_pool = nn.MaxPool2d(3, 2, padding=1)
+
+        if self.layer_norm:
+            self.norm_layer1 = nn.LayerNorm(layer_norm_shapes[0])
+            #self.norm_layer2 = nn.LayerNorm(layer_norm_shapes[1])
+
+        self.residual_0 = ImpalaCNNResidual(depth_out, norm_func=norm_func, activation=activation)
+        self.residual_1 = ImpalaCNNResidual(depth_out, norm_func=norm_func, activation=activation)
+
+    #@torch.autocast('cuda')
+    def forward(self, x):
+        x = self.conv(x)
+
+        if self.layer_norm:
+            x = self.norm_layer1(x)
+
+        #raise Exception("Array of 0s!")
+        #print(x.abs().sum().item())
+        x = self.max_pool(x)
+
+        x = self.residual_0(x)
+
+        x = self.residual_1(x)
+
+        #if self.layer_norm:
+        #x = self.norm_layer2(x)
+
+        return x
+
+
 class ImpalaCNNLargeIQN(nn.Module):
     """
     Implementation of the large variant of the IMPALA CNN introduced in Espeholt et al. (2018).
