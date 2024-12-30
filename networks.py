@@ -126,6 +126,28 @@ class ImpalaCNNBlock(nn.Module):
 
         return x
 
+class ImpalaCNNResidual(nn.Module):
+    """
+    Simple residual block used in the large IMPALA CNN.
+    """
+    def __init__(self, depth, norm_func, activation=nn.ReLU):
+        super().__init__()
+
+        self.activation = activation()
+
+        self.conv_0 = norm_func(nn.Conv2d(in_channels=depth, out_channels=depth, kernel_size=3, stride=1, padding=1))
+        self.conv_1 = norm_func(nn.Conv2d(in_channels=depth, out_channels=depth, kernel_size=3, stride=1, padding=1))
+
+    #@torch.autocast('cuda')
+    def forward(self, x):
+        #if x.abs().sum().item() != 0:
+        x_ = self.conv_0(self.activation(x))
+        #if x_.abs().sum().item() == 0:
+        #raise Exception("0 tensor found within residual layer!")
+        x_ = self.conv_1(self.activation(x_))
+        return x + x_
+
+
 
 class ImpalaCNNLargeIQN(nn.Module):
     """
