@@ -97,11 +97,14 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
         assert frame_skip > 0
         assert screen_size > 0
         assert noop_max >= 0
-        if frame_skip > 1 and getattr(env.unwrapped, "_frameskip", None) != 1:
-            print("Current Frameskip: "+env.unwrapped._frameskip)
-            raise ValueError(
-                "Disable frame-skipping in the original env. Otherwise, more than one frame-skip will happen as through this wrapper"
-            )
+        if hasattr(env.unwrapped, '_frameskip'):
+            if frame_skip > 1 and getattr(env.unwrapped, "_frameskip", None) != 1:
+                print("Current Frameskip: "+env.unwrapped._frameskip)
+                raise ValueError(
+                    "Disable frame-skipping in the original env. Otherwise, more than one frame-skip will happen as through this wrapper"
+                )
+        else:
+            print("No original frameskip found in the environment, make sure it's 1")
         self.noop_max = noop_max
         assert env.unwrapped.get_action_meanings()[0] == "NOOP"
 
