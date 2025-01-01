@@ -154,7 +154,7 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
         total_reward, terminated, truncated, info = 0.0, False, False, {}
 
         for t in range(self.frame_skip):
-            _, reward, terminated, truncated, info = self.env.step(action)
+            obs, reward, terminated, truncated, info = self.env.step(action)
             total_reward += reward
             self.game_over = terminated
 
@@ -190,7 +190,7 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
                 self.obs_buffer[0] = obs
 
 
-                
+
         return self._get_obs(), total_reward, terminated, truncated, info
 
     def reset(
@@ -206,10 +206,10 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
             else 0
         )
         for _ in range(noops):
-            _, _, terminated, truncated, step_info = self.env.step(0)
+            obs, _, terminated, truncated, step_info = self.env.step(0)
             reset_info.update(step_info)
             if terminated or truncated:
-                _, reset_info = self.env.reset(seed=seed, options=options)
+                obs, reset_info = self.env.reset(seed=seed, options=options)
 
         self.lives = reset_info["life"]
         #print("Obs buffer shape: "+str(self.obs_buffer.shape))
