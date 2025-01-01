@@ -180,16 +180,17 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
 
             if terminated or truncated:
                 break
+
+            if self.grayscale_obs:
+                obs = self.rgb2gray(obs)
+
             if t == self.frame_skip - 2:
-                if self.grayscale_obs:
-                    self.ale.getScreenGrayscale(self.obs_buffer[1])
-                else:
-                    self.ale.getScreenRGB(self.obs_buffer[1])
+                self.obs_buffer[1] = obs
             elif t == self.frame_skip - 1:
-                if self.grayscale_obs:
-                    self.ale.getScreenGrayscale(self.obs_buffer[0])
-                else:
-                    self.ale.getScreenRGB(self.obs_buffer[0])
+                self.obs_buffer[0] = obs
+
+
+                
         return self._get_obs(), total_reward, terminated, truncated, info
 
     def reset(
@@ -211,11 +212,11 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
                 _, reset_info = self.env.reset(seed=seed, options=options)
 
         self.lives = reset_info["life"]
-        print("Obs buffer shape: "+str(self.obs_buffer.shape))
+        #print("Obs buffer shape: "+str(self.obs_buffer.shape))
         if self.grayscale_obs:
-            self.ale.getScreenGrayscale(self.obs_buffer[0])
-        else:
-            self.ale.getScreenRGB(self.obs_buffer[0])
+            obs = self.rgb2gray(obs)
+
+        self.obs_buffer[0] = obs
         self.obs_buffer[1].fill(0)
 
         return self._get_obs(), reset_info
@@ -240,3 +241,31 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
         if self.grayscale_obs and self.grayscale_newaxis:
             obs = np.expand_dims(obs, axis=-1)  # Add a channel axis
         return obs
+    
+    def rgb2gray(self, rgb, norm=True):
+        """Convert RGB images to grayscale using the luminosity method.
+
+        The luminosity method is a weighted average of the R, G, and B channels,
+        calculated as 0.21 R + 0.72 G + 0.07 B. This method is commonly used
+        in image processing for converting color images to grayscale.
+
+        Args:
+            rgb (np.ndarray): A 3-dimensional numpy array representing an RGB image.
+                              The dimensions should be (height, width, channels), where channels=3.
+            norm (bool): If True, the output grayscale image will be normalized to the range [0, 1].
+                         If False, the output will be in the range [0, 255].
+
+        Returns:
+            np.ndarray: A 2-dimensional numpy array representing the grayscale image.
+                        The dimensions are (height, width).
+        """
+        # Coefficients for the luminosity method of grayscale conversion
+        gray = np.dot(rgb[...,:3], [0.21, 0.72, 0.07])
+
+        if norm:
+            # Normalize the grayscale image to the range [0, 1]
+            gray = gray.astype('float32') / 255.0
+        else:
+            gray = gray.astype('uint8')
+
+        return gray
