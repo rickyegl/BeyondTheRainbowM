@@ -182,14 +182,14 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
                 break
             if t == self.frame_skip - 2:
                 if self.grayscale_obs:
-                    self.obs_buffer[1]
+                    self.ale.getScreenGrayscale(self.obs_buffer[1])
                 else:
-                    self.obs_buffer[1]
+                    self.ale.getScreenRGB(self.obs_buffer[1])
             elif t == self.frame_skip - 1:
                 if self.grayscale_obs:
-                    self.obs_buffer[0]
+                    self.ale.getScreenGrayscale(self.obs_buffer[0])
                 else:
-                    self.obs_buffer[0]
+                    self.ale.getScreenRGB(self.obs_buffer[0])
         return self._get_obs(), total_reward, terminated, truncated, info
 
     def reset(
@@ -212,9 +212,9 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
 
         self.lives = reset_info["life"]
         if self.grayscale_obs:
-            self.obs_buffer[0]
+            self.ale.getScreenGrayscale(self.obs_buffer[0])
         else:
-            self.obs_buffer[0]
+            self.ale.getScreenRGB(self.obs_buffer[0])
         self.obs_buffer[1].fill(0)
 
         return self._get_obs(), reset_info
