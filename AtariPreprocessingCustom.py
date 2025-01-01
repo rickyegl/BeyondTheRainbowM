@@ -259,6 +259,7 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
             np.ndarray: A 2-dimensional numpy array representing the grayscale image.
                         The dimensions are (height, width).
         """
+        print("converting to grayscale")
         # Coefficients for the luminosity method of grayscale conversion
         gray = np.dot(rgb[...,:3], [0.21, 0.72, 0.07])
 
@@ -267,5 +268,5 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
             gray = gray.astype('float32') / 255.0
         else:
             gray = gray.astype('uint8')
-
+        print("Gray shape: "+str(gray.shape))
         return gray
