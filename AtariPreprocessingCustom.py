@@ -161,14 +161,14 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
             # using agent terminal without resetting env require terminal_on_life_loss == False
 
             if self.terminal_on_life_loss:
-                new_lives = self.ale.lives()
+                new_lives = info["life"]
                 terminated = terminated or new_lives < self.lives
                 self.game_over = terminated
                 self.lives = new_lives
                 info["lost_life"] = False
             elif self.life_information:
                 # code allows telling agent if they lost a life, so they can learn from terminal
-                new_lives = self.ale.lives()
+                new_lives = info["life"]
                 info["lost_life"] = new_lives < self.lives
                 self.lives = new_lives
 
@@ -182,14 +182,14 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
                 break
             if t == self.frame_skip - 2:
                 if self.grayscale_obs:
-                    self.ale.getScreenGrayscale(self.obs_buffer[1])
+                    self.obs_buffer[1]
                 else:
-                    self.ale.getScreenRGB(self.obs_buffer[1])
+                    self.obs_buffer[1]
             elif t == self.frame_skip - 1:
                 if self.grayscale_obs:
-                    self.ale.getScreenGrayscale(self.obs_buffer[0])
+                    self.obs_buffer[0]
                 else:
-                    self.ale.getScreenRGB(self.obs_buffer[0])
+                    self.obs_buffer[0]
         return self._get_obs(), total_reward, terminated, truncated, info
 
     def reset(
@@ -210,11 +210,11 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
             if terminated or truncated:
                 _, reset_info = self.env.reset(seed=seed, options=options)
 
-        self.lives = self.ale.lives()
+        self.lives = reset_info["life"]
         if self.grayscale_obs:
-            self.ale.getScreenGrayscale(self.obs_buffer[0])
+            self.obs_buffer[0]
         else:
-            self.ale.getScreenRGB(self.obs_buffer[0])
+            self.obs_buffer[0]
         self.obs_buffer[1].fill(0)
 
         return self._get_obs(), reset_info
