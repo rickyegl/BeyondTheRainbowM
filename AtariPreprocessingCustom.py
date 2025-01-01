@@ -211,9 +211,9 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
                 _, reset_info = self.env.reset(seed=seed, options=options)
 
         self.lives = reset_info["life"]
-        print("Obs buffer shape: "+str(self.obs_buffer[0].shape))
+        print("Obs buffer shape: "+str(self.obs_buffer.shape))
         if self.grayscale_obs:
-            self.ale.getScreenGrayscale(self.obs_buffer)
+            self.ale.getScreenGrayscale(self.obs_buffer[0])
         else:
             self.ale.getScreenRGB(self.obs_buffer[0])
         self.obs_buffer[1].fill(0)
