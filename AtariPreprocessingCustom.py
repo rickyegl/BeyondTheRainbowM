@@ -200,7 +200,7 @@ class AtariPreprocessingCustom(gym.Wrapper, gym.utils.RecordConstructorArgs):
         _, reset_info = self.env.reset(seed=seed, options=options)
 
         noops = (
-            self.env.unwrapped.np_random.integers(1, self.noop_max + 1)
+            self.env.unwrapped.np_random.randint(1, self.noop_max + 1)
             if self.noop_max > 0
             else 0
         )
